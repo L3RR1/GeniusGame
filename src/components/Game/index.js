@@ -54,10 +54,9 @@ const Game = () => {
     dispatch(addToSequence(getRandomButton())); // adiciona a primeira cor na sequência
     await new Promise((resolve) => setTimeout(resolve, 500)); // aguarda 500ms antes de tocar a sequência
     await startSequence(); // inicia a sequência
-    
+
   };
-  
-  
+
   // Função que toca o som do botão correspondente ao index atual
   const playButtonSound = async () => {
     if (!isPlayingSound) {
@@ -79,33 +78,76 @@ const Game = () => {
     }
   };
 
-  // Função que inicia a sequência de cores do jogo
-  const startSequence = async () => {
-    dispatch(clearUserSequence());
-    dispatch(startGame());
+  // Função que lida com o clique do usuário em um botão
+  const handleButtonClick = async (color) => {
+    if (isPlaying || isGameOver) return;
 
-    for (let i = 0; i < sequence.length; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      await playButtonSound();
+    dispatch(addUserSequence(color));
+
+    try {
+      const sound = buttonSounds[color];
+      await sound.setPositionAsync(0);
+      await sound.playAsync();
+    } catch (error) {
+      console.warn("Erro ao tocar o som:", error);
     }
-  };
 
-  // Função que verifica se a sequência do usuário está correta
-  const checkUserSequence = async () => {
-    for (let i = 0; i < userSequence.length; i++) {
-      if (userSequence[i] !== sequence[i]) {
-        dispatch(endGame());
-        return;
+    // Função que inicia a sequência de cores do jogo
+    const startSequence = async () => {
+      dispatch(clearUserSequence());
+      dispatch(startGame());
+
+      for (let i = 0; i < sequence.length; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await playButtonSound();
       }
-    }
+    };
 
+    // Verifica se o usuário completou a sequência
     if (userSequence.length === sequence.length) {
+      setIsPlaying(true);
+      await new Promise((resolve) => setTimeout(resolve, 500));
       dispatch(clearUserSequence());
       dispatch(incrementScore());
-      dispatch(addToSequence(getRandomButton()));
-      await startSequence();
+      dispatch(addToSequence());
+      setCurrentButtonIndex(0);
+      setIsPlaying(false);
     }
+
+    // Função que verifica se a sequência do usuário está correta
+    const checkUserSequence = async () => {
+      for (let i = 0; i < userSequence.length; i++) {
+        if (userSequence[i] !== sequence[i]) {
+          dispatch(endGame());
+          return;
+        }
+      }
+
+      if (userSequence.length === sequence.length) {
+        dispatch(clearUserSequence());
+        dispatch(incrementScore());
+        dispatch(addToSequence(getRandomButton()));
+        await startSequence();
+      }
+    };
+
+    await checkUserSequence();
   };
+
+  //Muda a cor do botão
+  const changeButtonColor = (color) => {
+    const button = document.querySelector(`[data-color="${color}"]`);
+    button.style.backgroundColor = "white";
+    return color;
+  }
+  //Volta a cor do botão para o normal
+  const resetButtonColors = () => {
+    const buttons = document.querySelectorAll(".game__button");
+    buttons.forEach((button) => {
+      button.style.backgroundColor = button.dataset.color;
+    });
+  }
+
 
   // Função que adiciona a cor escolhida pelo usuário à sua sequência
   const addUserButton = async (button) => {
@@ -126,12 +168,44 @@ const Game = () => {
     return buttons[randomIndex];
   };
 
-  // Função que reinicia o jogo
-  const restartGame = async () => {
+  // Função que inicia o jogo
+  const handleStartGame = async () => {
+    setIsGameStarted(true);
     dispatch(startGame());
-    dispatch(addToSequence(getRandomButton()));
-    await startSequence();
+
+    for (let i = 0; i < sequence.length; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const randomButton = getRandomButton();
+      dispatch(addSequence(randomButton));
+      await changeButtonColor(randomButton);
+      await buttonSounds[randomButton].setPositionAsync(0);
+      await buttonSounds[randomButton].playAsync();
+      await changeButtonColor('default'); // Mude a cor do botão de volta para a cor padrão
+    }
   };
+
+  // Função que inicia a sequência de cores do jogo
+  const startSequence = async () => {
+    dispatch(clearUserSequence());
+    dispatch(startGame());
+
+    for (let i = 0; i < sequence.length; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      changeButtonColor(sequence[i]);
+      await playButtonSound();
+    }
+
+    resetButtonColors();
+  };
+
+
+
+  // Função que reinicia o jogo
+  const handleRestartGame = () => {
+    setIsGameStarted(false);
+    dispatch(endGame());
+  };
+
 
   return (
     <LinearGradient colors={["#000428", "#004E92"]} style={styles.container}>
@@ -139,20 +213,32 @@ const Game = () => {
         <Text style={styles.scoreText}>Score: {score}</Text>
         <View style={styles.buttonsContainer}>
           <Pressable
-            style={[styles.button, styles.greenButton]}
-            onPress={() => addUserButton("green")}
+            style={[styles.button, styles["green"]]}
+            onPress={() => handleButtonClick("green")}
+            key={"green"}
+            android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
+            data-color={"green"}
           />
           <Pressable
-            style={[styles.button, styles.redButton]}
-            onPress={() => addUserButton("red")}
+            style={[styles.button, styles["red"]]}
+            onPress={() => handleButtonClick("red")}
+            key={"red"}
+            android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
+            data-color={"red"}
           />
           <Pressable
-            style={[styles.button, styles.yellowButton]}
-            onPress={() => addUserButton("yellow")}
+            style={[styles.button, styles["yellow"]]}
+            onPress={() => handleButtonClick("yellow")}
+            key={"yellow"}
+            android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
+            data-color={"yellow"}
           />
           <Pressable
-            style={[styles.button, styles.blueButton]}
-            onPress={() => addUserButton("blue")}
+            style={[styles.button, styles["blue"]]}
+            onPress={() => handleButtonClick("blue")}
+            key={"blue"}
+            android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
+            data-color={"blue"}
           />
         </View>
         {isGameOver && (
@@ -168,6 +254,7 @@ const Game = () => {
       </View>
     </LinearGradient>
   );
+
 };
 
 const styles = StyleSheet.create({
@@ -185,7 +272,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 32,
   },
-  startButtonText:{
+  startButtonText: {
     fontSize: 32,
     fontWeight: "bold",
   },
