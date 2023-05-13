@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { StyleSheet, View, Pressable, Text } from "react-native";
+import { StyleSheet, View, Pressable, Text, } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Audio } from "expo-av";
 import {
@@ -105,13 +105,13 @@ const Game = () => {
 
     // Verifica se o usuário completou a sequência
     if (userSequence.length === sequence.length) {
-      setIsPlaying(true);
+      isPlaying(true);
       await new Promise((resolve) => setTimeout(resolve, 500));
       dispatch(clearUserSequence());
       dispatch(incrementScore());
       dispatch(addToSequence());
       setCurrentButtonIndex(0);
-      setIsPlaying(false);
+      isPlaying(false);
     }
 
     // Função que verifica se a sequência do usuário está correta
@@ -122,6 +122,7 @@ const Game = () => {
           return;
         }
       }
+
 
       if (userSequence.length === sequence.length) {
         dispatch(clearUserSequence());
@@ -136,7 +137,7 @@ const Game = () => {
 
   //Muda a cor do botão
   const changeButtonColor = (color) => {
-    const button = document.querySelector(`[data-color="${color}"]`);
+    const button = document.querySelector(`[data-color="${"white"}"]`);
     button.style.backgroundColor = "white";
     return color;
   }
@@ -215,30 +216,18 @@ const Game = () => {
           <Pressable
             style={[styles.button, styles["green"]]}
             onPress={() => handleButtonClick("green")}
-            key={"green"}
-            android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
-            data-color={"green"}
           />
           <Pressable
             style={[styles.button, styles["red"]]}
             onPress={() => handleButtonClick("red")}
-            key={"red"}
-            android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
-            data-color={"red"}
           />
           <Pressable
             style={[styles.button, styles["yellow"]]}
             onPress={() => handleButtonClick("yellow")}
-            key={"yellow"}
-            android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
-            data-color={"yellow"}
           />
           <Pressable
             style={[styles.button, styles["blue"]]}
             onPress={() => handleButtonClick("blue")}
-            key={"blue"}
-            android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
-            data-color={"blue"}
           />
         </View>
         {isGameOver && (

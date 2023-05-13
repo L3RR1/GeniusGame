@@ -26,6 +26,12 @@ const Home = ({ navigation }) => {
       >
         <Text style={styles.buttonText}>Histórico</Text>
       </Pressable>
+      <Pressable
+        style={styles.button}
+        onPress={() => navigation.navigate('SignInScreen')}
+      >
+        <Text style={styles.buttonText}>Login</Text>
+      </Pressable>
     </LinearGradient>
   );
 };
